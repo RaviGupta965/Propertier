@@ -1,39 +1,43 @@
-import { writeFile,unlink } from 'fs/promises';
-import cloudinary from '@/app/lib/cloudinary';
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+import { v2 as cloudinary } from 'cloudinary';
+import { Readable } from 'stream';
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function POST(req) {
-  const formData = await req.formData();
-  const files = formData.getAll('images');
+  try {
+    const formData = await req.formData();
+    const files = formData.getAll('photos');
 
-  if (!files || files.length < 1) {
-    return Response.json({ error: 'No files uploaded' }, { status: 400 });
-  }
-
-  const uploadedUrls = [];
-
-  for (const file of files) {
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const tmpPath = `./src/uploads/${Date.now()}-${file.name}`;
-
-    await writeFile(tmpPath, buffer);
-
-    try {
-      const result = await cloudinary.uploader.upload(tmpPath, {
-        resource_type: 'image',
-      });
-      uploadedUrls.push(result.secure_url);
-    } catch (err) {
-      console.error("Cloudinary upload failed:", err.message);
-    } finally {
-      await unlink(tmpPath);
+    if (!files || files.length === 0) {
+      return new Response('No files uploaded', { status: 400 });
     }
-  }
 
-  return Response.json({ urls: uploadedUrls });
+    const uploadPromises = files.map(async (file) => {
+      if (typeof file === 'string') return null;
+
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const stream = Readable.from(buffer);
+
+      return new Promise((resolve, reject) => {
+        const upload = cloudinary.uploader.upload_stream(
+          { folder: 'propertier' },
+          (err, result) => {
+            if (err) reject(err);
+            else resolve(result.secure_url);
+          }
+        );
+        stream.pipe(upload);
+      });
+    });
+
+    const urls = await Promise.all(uploadPromises);
+    return Response.json({ urls: urls.filter(Boolean) }); // filters nulls
+  } catch (err) {
+    console.error('Upload Error:', err);
+    return new Response('Upload failed', { status: 500 });
+  }
 }

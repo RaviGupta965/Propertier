@@ -19,7 +19,7 @@ export default function AddProperty() {
     if (!files || files.length < 1) return;
 
     const formData = new FormData();
-    for (const file of files) formData.append("images", file);
+    for (const file of files) formData.append("photos", file);
 
     const res = await fetch("/api/upload", {
       method: "POST",
@@ -48,7 +48,7 @@ export default function AddProperty() {
       if (Array.isArray(value)) value.forEach((v) => formData.append(key, v));
       else formData.append(key, value);
     }
-
+    console.log(formData)
     const res = await fetch("/api/properties/add", {
       method: "POST",
       body: formData,
@@ -94,6 +94,7 @@ export default function AddProperty() {
         ].map(([label, name]) => (
           <input
             key={name}
+            name={name}
             placeholder={label}
             required={["ownerName", "contact", "rent"].includes(name)}
             className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -102,6 +103,7 @@ export default function AddProperty() {
         ))}
 
         <select
+          name="spaceType"
           required
           className="border px-3 py-2 rounded"
           onChange={(e) => setForm({ ...form, spaceType: e.target.value })}
@@ -114,6 +116,7 @@ export default function AddProperty() {
         </select>
 
         <select
+          name="furnishing"
           className="border px-3 py-2 rounded"
           onChange={(e) => setForm({ ...form, furnishing: e.target.value })}
         >
@@ -124,6 +127,7 @@ export default function AddProperty() {
         </select>
 
         <select
+          name="petsAllowed"
           className="border px-3 py-2 rounded"
           onChange={(e) => setForm({ ...form, petsAllowed: e.target.value })}
         >
@@ -133,6 +137,7 @@ export default function AddProperty() {
         </select>
 
         <select
+          name="preference"
           className="border px-3 py-2 rounded"
           onChange={(e) => setForm({ ...form, preference: e.target.value })}
         >
@@ -149,6 +154,7 @@ export default function AddProperty() {
               <label key={item} className="flex items-center space-x-2">
                 <input
                   type="checkbox"
+                  name="appliances"
                   checked={form.appliances.includes(item)}
                   onChange={() => handleMultiSelect("appliances", item)}
                 />
@@ -165,6 +171,7 @@ export default function AddProperty() {
               <label key={item} className="flex items-center space-x-2">
                 <input
                   type="checkbox"
+                  name="amenities"
                   checked={form.amenities.includes(item)}
                   onChange={() => handleMultiSelect("amenities", item)}
                 />
@@ -175,6 +182,7 @@ export default function AddProperty() {
         </div>
 
         <textarea
+          name="about"
           placeholder="About the property"
           className="md:col-span-2 border px-3 py-2 rounded h-24 resize-none"
           onChange={(e) => setForm({ ...form, about: e.target.value })}
