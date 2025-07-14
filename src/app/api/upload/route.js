@@ -19,7 +19,7 @@ export async function POST(req) {
   for (const file of files) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const tmpPath = `./uploads/${Date.now()}-${file.name}`;
+    const tmpPath = `./src/uploads/${Date.now()}-${file.name}`;
 
     await writeFile(tmpPath, buffer);
 
