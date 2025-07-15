@@ -1,6 +1,5 @@
 import { connectDB } from '@/app/lib/mongodb';
 import { Property } from '@/app/models/Property';
-import Image from 'next/image';
 
 export async function generateMetadata({ params }) {
   return {

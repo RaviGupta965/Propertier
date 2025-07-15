@@ -1,9 +1,9 @@
 import { connectDB } from "@/app/lib/mongodb";
 import { Property } from "@/app/models/Property";
 
-export async function GET(_, { params }) {
-  await connectDB();
-  const { id } = params;
+export async function GET(req, context) {
+  await connectDB()
+  const { id } = context.params;
 
   const property = await Property.findById(id);
   if (!property) return new Response("Not Found", { status: 404 });
